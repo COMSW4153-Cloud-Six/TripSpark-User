@@ -60,12 +60,11 @@ def get_health_with_path(
 # -----------------------------------------------------------------------------
 @app.post("/users", response_model=UserRead, status_code=201)
 def create_user(user: UserCreate):
-    """Create a new user, optionally with a profile included."""
-    user_data = user.model_dump()
-    user_read = UserRead(**user_data)
-    if user_read.id in users:
-        raise HTTPException(status_code=400, detail="User with this ID already exists")
-
+    if any(u.email == user.email for u in users.values()):
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+    user_read = UserRead(**user.model_dump())
+    profile = UserProfile(user_id=user_read.id)
+    user_read.profile = profile
     users[user_read.id] = user_read
     return user_read
 
@@ -113,9 +112,9 @@ def update_user(user_id: UUID, update: UserUpdate):
     stored = users[user_id].model_dump()
     update_data = update.model_dump(exclude_unset=True)
 
-    # Merge changes, including embedded profile
-    if "profile" in update_data and update_data["profile"] is not None:
-        stored["profile"] = update_data["profile"]
+    if "profile" in update_data:
+        if update_data["profile"] is not None:
+            stored["profile"] = update_data["profile"]
 
     stored.update(update_data)
     users[user_id] = UserRead(**stored)

@@ -53,18 +53,8 @@ class UserBase(BaseModel):
         }
     }
 
+UserCreate = UserBase
 
-# --- Create model ---
-class UserCreate(UserBase):
-    """Payload to create a new user account."""
-    password: str = Field(
-        ...,
-        description="Plaintext password (should be hashed in storage).",
-        example="supersecurepassword123",
-    )
-
-
-# --- Update model ---
 class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, description="Updated full name of the user.")
     email: Optional[str] = Field(None, description="Updated email address.")
@@ -88,7 +78,6 @@ class UserUpdate(BaseModel):
             ]
         }
     }
-
 
 # --- Read model ---
 class UserRead(UserBase):
