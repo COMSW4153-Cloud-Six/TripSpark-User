@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import mysql.connector
 import os
 import socket
 from datetime import datetime
@@ -59,6 +59,25 @@ def get_health_with_path(
 # -----------------------------------------------------------------------------
 # Helper for linked data
 # -----------------------------------------------------------------------------
+
+@app.get("/dbtest")
+def test_db_connection():
+    try:
+        conn = mysql.connector.connect(
+            host=os.environ.get("DB_HOST"),
+            user=os.environ.get("DB_USER"),
+            password=os.environ.get("DB_PASS"),
+            database=os.environ.get("DB_NAME")
+        )
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1;")
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return {"status": "success", "result": result[0]}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    
 def _add_links(user: UserRead) -> dict:
     """Attach relative links to a user resource for linked-data compliance."""
     data = user.model_dump()
