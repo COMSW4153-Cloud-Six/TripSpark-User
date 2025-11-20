@@ -1,0 +1,34 @@
+{
+    "full_name": "Jane Doe",
+    "email": "jane.doe@example.com",
+    "home_city": "New York",
+    "country": "USA",
+    "profile_photo_url": null,
+    "profile": {
+      "spending_preference": "medium",
+      "daily_budget_limit": 200.0,
+      "trip_style": "walkable",
+      "trip_pace": "balanced",
+      "preferred_vibes": ["artsy", "cozy"],
+      "favorite_foods": ["coffee", "ramen"],
+      "favorite_activities": ["museums", "cafes"],
+      "favorite_seasons": ["fall", "spring"],
+      "min_trip_days": 3,
+      "max_trip_days": 7,
+      "home_location": "New York",
+      "nearest_airport": "JFK",
+      "transport_preferences": ["walk", "public_transit"],
+      "accessibility_notes": "Prefer short walks; avoid many stairs",
+      "cities_visited": [
+        {"name": "Tokyo", "rating": 5.0},
+        {"name": "New York", "rating": 4.0}
+      ],
+      "places_visited": [
+        {"name": "MoMA", "rating": 4.5},
+        {"name": "Blue Bottle Chelsea", "rating": 4.8}
+      ],
+      "cities_saved": ["Seoul", "Lisbon"],
+      "places_saved": ["Brooklyn Bridge", "Lafayette Bakery SoHo"]
+    }
+  }
+  

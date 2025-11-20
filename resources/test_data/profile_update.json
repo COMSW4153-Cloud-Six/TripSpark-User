@@ -1,0 +1,27 @@
+{
+    "spending_preference": "high",
+    "daily_budget_limit": 400.0,
+    "trip_style": "luxury",
+    "trip_pace": "packed",
+    "preferred_vibes": ["modern", "upscale", "romantic"],
+    "favorite_foods": ["steak", "wine", "sushi"],
+    "favorite_activities": ["fine dining", "shopping", "theatre"],
+    "favorite_seasons": ["summer", "winter"],
+    "min_trip_days": 5,
+    "max_trip_days": 10,
+    "home_location": "Los Angeles",
+    "nearest_airport": "LAX",
+    "transport_preferences": ["rideshare", "car_rental"],
+    "accessibility_notes": "No stairs preferred, prefers private transfers",
+    "cities_visited": [
+      {"name": "Paris", "rating": 5.0},
+      {"name": "Kyoto", "rating": 4.8}
+    ],
+    "places_visited": [
+      {"name": "Eiffel Tower", "rating": 5.0},
+      {"name": "Gion District", "rating": 4.5}
+    ],
+    "cities_saved": ["Rome", "Seoul"],
+    "places_saved": ["Colosseum", "Namsan Tower"]
+  }
+  

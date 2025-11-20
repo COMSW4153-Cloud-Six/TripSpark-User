@@ -5,8 +5,10 @@ import socket
 from datetime import datetime
 from typing import Dict, List, Optional
 from uuid import UUID
+import hashlib
+from fastapi.responses import JSONResponse
 
-from fastapi import FastAPI, HTTPException, Query, Path
+from fastapi import FastAPI, HTTPException, Query, Path, Response
 
 # -----------------------------------------------------------------------------
 # Imports
@@ -54,32 +56,46 @@ def get_health_with_path(
 ):
     return make_health(echo=echo, path_echo=path_echo)
 
+# -----------------------------------------------------------------------------
+# Helper for linked data
+# -----------------------------------------------------------------------------
+def _add_links(user: UserRead) -> dict:
+    """Attach relative links to a user resource for linked-data compliance."""
+    data = user.model_dump()
+    data["_links"] = {
+        "self": f"/users/{user.id}",
+        "profile": f"/users/{user.id}/profile",
+    }
+    return data
 
 # -----------------------------------------------------------------------------
 # User endpoints (with embedded UserProfile)
 # -----------------------------------------------------------------------------
 @app.post("/users", response_model=UserRead, status_code=201)
-def create_user(user: UserCreate):
+def create_user(user: UserCreate, response: Response):
     if any(u.email == user.email for u in users.values()):
         raise HTTPException(status_code=400, detail="User with this email already exists")
     user_read = UserRead(**user.model_dump())
     profile = UserProfile(user_id=user_read.id)
     user_read.profile = profile
     users[user_read.id] = user_read
-    return user_read
-
+    response.headers["Location"] = f"/users/{user_read.id}"
+    return _add_links(user_read)
 
 @app.get("/users", response_model=List[UserRead])
 def list_users(
     name: Optional[str] = Query(None, description="Filter by full name"),
     email: Optional[str] = Query(None, description="Filter by email"),
+    offset: int = Query(0, ge=0, description="Pagination offset (start index)"),
+    limit: int = Query(10, ge=1, le=100, description="Pagination limit"),
 ):
     results = list(users.values())
     if name is not None:
         results = [u for u in results if u.full_name == name]
     if email is not None:
         results = [u for u in results if u.email == email]
-    return results
+    paginated = results[offset: offset + limit]
+    return [_add_links(u) for u in paginated]
 
 
 @app.get("/users/{user_id}", response_model=UserRead)
@@ -87,7 +103,10 @@ def get_user(user_id: UUID):
     """Retrieve a single user and their profile."""
     if user_id not in users:
         raise HTTPException(status_code=404, detail="User not found")
-    return users[user_id]
+    user = users[user_id]
+    user_json = user.model_dump_json().encode("utf-8")
+    etag = hashlib.md5(user_json).hexdigest()
+    return JSONResponse(content=_add_links(user), headers={"ETag": etag})
 
 
 @app.put("/users/{user_id}", response_model=UserRead)
@@ -154,7 +173,6 @@ def update_user_profile(user_id: UUID, profile: UserProfile):
     current["profile"] = profile
     users[user_id] = UserRead(**current)
     return users[user_id].profile
-
 
 # -----------------------------------------------------------------------------
 # Root endpoint
