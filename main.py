@@ -20,7 +20,7 @@ from models.health import Health
 # -----------------------------------------------------------------------------
 # Config and in-memory "databases"
 # -----------------------------------------------------------------------------
-port = int(os.environ.get("FASTAPIPORT", 8000))
+port = int(os.environ.get("PORT", 8080))
 
 users: Dict[UUID, UserRead] = {}
 
