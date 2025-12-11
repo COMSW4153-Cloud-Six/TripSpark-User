@@ -126,6 +126,9 @@ def list_users(
 # -----------------------------------------------------------------------------
 # Get User
 # -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# Get User
+# -----------------------------------------------------------------------------
 @app.get("/users/{user_id}", response_model=UserRead)
 def get_user(user_id: UUID):
     if user_id not in users:
@@ -133,15 +136,19 @@ def get_user(user_id: UUID):
 
     user = users[user_id]
 
-    # generate ETag
-    user_json = user.model_dump_json().encode("utf-8")
-    etag = hashlib.md5(user_json).hexdigest()
+    # 1. Generate content: use model_dump(mode='json') to serialize UUID/datetime
+    #    into JSON-safe strings.
+    user_content = user.model_dump(mode='json') 
+    
+    # 2. Generate ETag: Still use model_dump_json() for consistent serialization 
+    #    to create the hash.
+    user_json_str = user.model_dump_json()
+    etag = hashlib.md5(user_json_str.encode("utf-8")).hexdigest()
 
     return JSONResponse(
-        content=user.model_dump(),
+        content=user_content,
         headers={"ETag": etag}
     )
-
 
 # -----------------------------------------------------------------------------
 # Replace User
