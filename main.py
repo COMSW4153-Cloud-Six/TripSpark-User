@@ -135,13 +135,8 @@ def get_user(user_id: UUID):
         raise HTTPException(status_code=404, detail="User not found")
 
     user = users[user_id]
-
-    # 1. Generate content: use model_dump(mode='json') to serialize UUID/datetime
-    #    into JSON-safe strings.
     user_content = user.model_dump(mode='json') 
     
-    # 2. Generate ETag: Still use model_dump_json() for consistent serialization 
-    #    to create the hash.
     user_json_str = user.model_dump_json()
     etag = hashlib.md5(user_json_str.encode("utf-8")).hexdigest()
 
@@ -158,7 +153,6 @@ def replace_user(user_id: UUID, user: UserCreate):
     if user_id not in users:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Keep existing profile, replace everything else
     existing_profile = users[user_id].profile
 
     updated = UserRead(
@@ -192,12 +186,10 @@ def update_user(user_id: UUID, update: UserUpdate):
     if "profile" in update_data and update_data["profile"] is not None:
         prof_update = update_data["profile"]
 
-        # ensure stored.profile is always a UserProfile
         if isinstance(stored.profile, dict):
             stored.profile = UserProfile(**stored.profile)
 
         if isinstance(prof_update, dict):
-            # Update only provided profile fields
             for key, value in prof_update.items():
                 setattr(stored.profile, key, value)
         elif isinstance(prof_update, UserProfile):
@@ -237,8 +229,7 @@ def get_user_profile(user_id: UUID):
 def update_user_profile(user_id: UUID, profile: UserProfile):
     if user_id not in users:
         raise HTTPException(status_code=404, detail="User not found")
-
-    # replace profile fully
+    
     users[user_id].profile = profile
     users[user_id].updated_at = datetime.utcnow()
 
