@@ -143,20 +143,37 @@ def replace_user(user_id: UUID, user: UserCreate):
 
 @app.patch("/users/{user_id}", response_model=UserRead)
 def update_user(user_id: UUID, update: UserUpdate):
-    """Update core info or the embedded profile."""
     if user_id not in users:
         raise HTTPException(status_code=404, detail="User not found")
 
-    stored = users[user_id].model_dump()
+    user = users[user_id]
+    stored = user.model_dump()
     update_data = update.model_dump(exclude_unset=True)
 
-    if "profile" in update_data:
-        if update_data["profile"] is not None:
-            stored["profile"] = update_data["profile"]
+    if "profile" in update_data and update_data["profile"] is not None:
 
-    stored.update(update_data)
-    users[user_id] = UserRead(**stored)
-    return users[user_id]
+        new_profile_fields = update_data["profile"]
+
+        if isinstance(stored["profile"], UserProfile):
+            prof_dict = stored["profile"].model_dump()
+        else:
+            prof_dict = dict(stored["profile"])
+
+        for key, value in new_profile_fields.items():
+            prof_dict[key] = value
+
+        # rebuild UserProfile model
+        stored["profile"] = UserProfile(**prof_dict)
+
+        # prevent profile from being double-updated below
+        del update_data["profile"]
+
+    for key, value in update_data.items():
+        stored[key] = value
+
+    updated_user = UserRead(**stored)
+    users[user_id] = updated_user
+    return updated_user
 
 
 @app.delete("/users/{user_id}", status_code=204)
