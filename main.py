@@ -146,34 +146,23 @@ def update_user(user_id: UUID, update: UserUpdate):
     if user_id not in users:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user = users[user_id]
-    stored = user.model_dump()
+    stored = users[user_id]
+
     update_data = update.model_dump(exclude_unset=True)
 
-    if "profile" in update_data and update_data["profile"] is not None:
+    for field, value in update_data.items():
+        if field != "profile":
+            setattr(stored, field, value)
+            
+    if "profile" in update_data:
+        prof_update = update_data["profile"]
+        if prof_update is not None:
+            for key, value in prof_update.items():
+                setattr(stored.profile, key, value)
 
-        new_profile_fields = update_data["profile"]
+    stored.updated_at = datetime.utcnow()
 
-        if isinstance(stored["profile"], UserProfile):
-            prof_dict = stored["profile"].model_dump()
-        else:
-            prof_dict = dict(stored["profile"])
-
-        for key, value in new_profile_fields.items():
-            prof_dict[key] = value
-
-        # rebuild UserProfile model
-        stored["profile"] = UserProfile(**prof_dict)
-
-        # prevent profile from being double-updated below
-        del update_data["profile"]
-
-    for key, value in update_data.items():
-        stored[key] = value
-
-    updated_user = UserRead(**stored)
-    users[user_id] = updated_user
-    return updated_user
+    return stored
 
 
 @app.delete("/users/{user_id}", status_code=204)
