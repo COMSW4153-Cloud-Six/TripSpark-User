@@ -65,7 +65,7 @@ class UserUpdate(BaseModel):
         description="Updated profile photo URL. If not provided, no picture is required.",
         example=None,
     )
-    profile: Optional[dict] = None
+    profile: Optional[UserProfile] = None
 
     model_config = {
         "json_schema_extra": {
